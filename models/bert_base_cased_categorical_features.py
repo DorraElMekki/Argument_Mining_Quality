@@ -2,6 +2,7 @@ import itertools
 import random
 
 from models.constants import *
+
 from .utils import *
 
 
@@ -34,28 +35,55 @@ def train_test_bert_with_categorical_features(model_name="bert-base-cased") -> N
                                 for fold_id in range(cross_validation):
                                     df_result = pd.DataFrame()
                                     num_extra_dims = len(numerical_features)
-                                    dataset, num_labels = process_data_to_DatasetDict_type(dataset_csv_path,target_class, fold_id, token,
-                                                                                           textual_features_list,
-                                                                                           numerical_features)
-                                    tokenizer, train_dataloader, eval_dataloader = data_tokenization(dataset,
-                                                                                                     model_name,
-                                                                                                     batch_size)
-                                    model, df_result = train_model(
-                                        model_name, tokenizer, num_labels, token, lr, num_epochs, train_dataloader,
-                                        device, weights, metrics_dict, df_result, num_extra_dims
+                                    dataset, num_labels = process_data_to_dataset_dict_type(
+                                        dataset_csv_path,
+                                        target_class,
+                                        fold_id,
+                                        token,
+                                        textual_features_list,
+                                        numerical_features,
                                     )
-                                    df_result = model_evaluation(device, model, weights, metrics_dict, df_result,
-                                                                 eval_dataloader)
-                                    df_result = save_model_description_in_df_results(df_result, model_name,
-                                                                                     target_class, weights, num_epochs,
-                                                                                     loss_function_name, task, fold_id,
-                                                                                     cross_validation,
-                                                                                     textual_features_list,
-                                                                                     numerical_features, lr, batch_size,
-                                                                                     token, dataset)
+                                    tokenizer, train_dataloader, eval_dataloader = data_tokenization(
+                                        dataset, model_name, batch_size
+                                    )
+                                    model, df_result = train_model(
+                                        model_name,
+                                        tokenizer,
+                                        num_labels,
+                                        token,
+                                        lr,
+                                        num_epochs,
+                                        train_dataloader,
+                                        device,
+                                        weights,
+                                        metrics_dict,
+                                        df_result,
+                                        num_extra_dims,
+                                    )
+                                    df_result = model_evaluation(
+                                        device, model, weights, metrics_dict, df_result, eval_dataloader
+                                    )
+                                    df_result = save_model_description_in_df_results(
+                                        df_result,
+                                        model_name,
+                                        target_class,
+                                        weights,
+                                        num_epochs,
+                                        loss_function_name,
+                                        task,
+                                        fold_id,
+                                        cross_validation,
+                                        textual_features_list,
+                                        numerical_features,
+                                        lr,
+                                        batch_size,
+                                        token,
+                                        dataset,
+                                    )
                                     save_results_to_csv(df_result_csv_path, df_result)
                                 add_mean_std_sem_for_the_previous_scores_resulting_from_cross_validation(
-                                    cross_validation, df_result_csv_path)
+                                    cross_validation, df_result_csv_path
+                                )
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@ import logging
 import os
 import stat
 from datetime import datetime
-from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -13,7 +12,7 @@ from torch.utils.data import DataLoader
 from tqdm.notebook import tqdm
 from transformers import AdamW, AutoTokenizer, get_scheduler
 
-from models.constants import seed, cross_validation
+from models.constants import cross_validation, seed
 from models.custom_sequence_classification import CustomSequenceClassification
 
 metrics_dict = {
@@ -36,8 +35,7 @@ metrics_dict = {
 }
 
 
-def save_metrics(df_result: pd.DataFrame, dataset_name: str = "train",
-                 metrics_dict=metrics_dict) -> pd.DataFrame:
+def save_metrics(df_result: pd.DataFrame, dataset_name: str = "train", metrics_dict=metrics_dict) -> pd.DataFrame:
     """
     save the scores of the metrics defined in metrics_dict in the df_result.
     :param df_result:
@@ -75,9 +73,14 @@ def create_folder_if_does_not_exist(folder_path: str) -> None:
         os.makedirs(folder_path)
 
 
-def process_data_to_DatasetDict_type(dataset_csv_path: str, target_class: str, fold_id: int, token: str,
-                                     textual_features_list:
-                                     List[str], numerical_features: List[str]) -> Tuple[DatasetDict, int]:
+def process_data_to_dataset_dict_type(
+    dataset_csv_path: str,
+    target_class: str,
+    fold_id: int,
+    token: str,
+    textual_features_list: list[str],
+    numerical_features: list[str],
+) -> tuple[DatasetDict, int]:
     """
     process data to be used as input to the model
     the dataset type = DatasetDict
@@ -93,7 +96,7 @@ def process_data_to_DatasetDict_type(dataset_csv_path: str, target_class: str, f
     df = pd.read_csv(dataset_csv_path)
     if token == "special":
 
-        def combined_textual_features_special_token(row: pd.Series, textual_features_list: List[str]) -> str:
+        def combined_textual_features_special_token(row: pd.Series, textual_features_list: list[str]) -> str:
             """
 
             :param row:
@@ -117,10 +120,11 @@ def process_data_to_DatasetDict_type(dataset_csv_path: str, target_class: str, f
             return combined
 
         df["combined_textual_features"] = df.apply(
-            lambda row: combined_textual_features_special_token(row, textual_features_list), axis=1)
+            lambda row: combined_textual_features_special_token(row, textual_features_list), axis=1
+        )
     elif token in {"[SEP]", " "}:
 
-        def combined_textual_features(row: pd.Series, textual_features_list: List[str], token: str) -> str:
+        def combined_textual_features(row: pd.Series, textual_features_list: list[str], token: str) -> str:
             """
 
             :param row:
@@ -147,7 +151,8 @@ def process_data_to_DatasetDict_type(dataset_csv_path: str, target_class: str, f
             return combined
 
         df["combined_textual_features"] = df.apply(
-            lambda row: combined_textual_features(row, textual_features_list, token), axis=1)
+            lambda row: combined_textual_features(row, textual_features_list, token), axis=1
+        )
 
     logging.info(f"df.head(2) {df.head(2)}")
     possible_labels = df[target_class].unique()
@@ -168,7 +173,7 @@ def process_data_to_DatasetDict_type(dataset_csv_path: str, target_class: str, f
     df["claim_label"] = df["claim_label"].replace(claim_label_dict)
     logging.info(f"claim_label_dict for claim_label:{claim_label_dict}")
 
-    def add_extra_data(row: pd.Series, numerical_features: List[str]) -> List[str]:
+    def add_extra_data(row: pd.Series, numerical_features: list[str]) -> list[str]:
         """
 
         :param row:
@@ -231,8 +236,9 @@ def process_data_to_DatasetDict_type(dataset_csv_path: str, target_class: str, f
     ]
     df["fold_id"] = k_fold_classification(df[columns], cross_validation)
 
-    def train_test_split_fold_id(df: pd.DataFrame, fold_id: int) -> Tuple[
-        pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def train_test_split_fold_id(
+        df: pd.DataFrame, fold_id: int
+    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         split the train, test sets with respect to the fold_id.
         :param df:
@@ -275,8 +281,9 @@ def process_data_to_DatasetDict_type(dataset_csv_path: str, target_class: str, f
     return dataset, num_labels
 
 
-def data_tokenization(dataset: DatasetDict, model_name: str, batch_size: int) -> Tuple[
-    AutoTokenizer, DataLoader, DataLoader]:
+def data_tokenization(
+    dataset: DatasetDict, model_name: str, batch_size: int
+) -> tuple[AutoTokenizer, DataLoader, DataLoader]:
     """
 
     :param dataset:
@@ -305,10 +312,20 @@ def data_tokenization(dataset: DatasetDict, model_name: str, batch_size: int) ->
     return tokenizer, train_dataloader, eval_dataloader
 
 
-def train_model(model_name: str, tokenizer: AutoTokenizer, num_labels: int, token: str, lr: float, num_epochs: int,
-                train_dataloader: DataLoader, device: str, weights: List[int],
-                metrics_dict: dict, df_result: pd.DataFrame, num_extra_dims: int) -> Tuple[
-    CustomSequenceClassification, pd.DataFrame]:
+def train_model(
+    model_name: str,
+    tokenizer: AutoTokenizer,
+    num_labels: int,
+    token: str,
+    lr: float,
+    num_epochs: int,
+    train_dataloader: DataLoader,
+    device: str,
+    weights: list[int],
+    metrics_dict: dict,
+    df_result: pd.DataFrame,
+    num_extra_dims: int,
+) -> tuple[CustomSequenceClassification, pd.DataFrame]:
     """
 
     :param model_name:
@@ -325,8 +342,9 @@ def train_model(model_name: str, tokenizer: AutoTokenizer, num_labels: int, toke
     :param num_extra_dims: the size of numerical features
     :return:
     """
-    model = CustomSequenceClassification.from_pretrained(model_name, num_labels=num_labels,
-                                                         num_extra_dims=num_extra_dims)  # num_extra_dims the size of numerical features
+    model = CustomSequenceClassification.from_pretrained(
+        model_name, num_labels=num_labels, num_extra_dims=num_extra_dims
+    )  # num_extra_dims the size of numerical features
     if token == "special":
         list_of_added_tokens = [
             "[cl_text]",
@@ -351,8 +369,9 @@ def train_model(model_name: str, tokenizer: AutoTokenizer, num_labels: int, toke
     ##Optimizer and learning rate scheduler
     optimizer = AdamW(model.parameters(), lr=lr)
     num_training_steps = num_epochs * len(train_dataloader)
-    lr_scheduler = get_scheduler(name="linear", optimizer=optimizer, num_warmup_steps=0,
-                                 num_training_steps=num_training_steps)
+    lr_scheduler = get_scheduler(
+        name="linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps
+    )
     model.to(device)
 
     ##Training loop
@@ -403,8 +422,14 @@ def train_model(model_name: str, tokenizer: AutoTokenizer, num_labels: int, toke
     return model, df_result
 
 
-def model_evaluation(device: str, model: CustomSequenceClassification, weights: List[int], metrics_dict: dict,
-                     df_result: pd.DataFrame, eval_dataloader: DataLoader) -> pd.DataFrame:
+def model_evaluation(
+    device: str,
+    model: CustomSequenceClassification,
+    weights: list[int],
+    metrics_dict: dict,
+    df_result: pd.DataFrame,
+    eval_dataloader: DataLoader,
+) -> pd.DataFrame:
     """
 
     :param device:
@@ -441,11 +466,23 @@ def model_evaluation(device: str, model: CustomSequenceClassification, weights: 
     return df_result
 
 
-def save_model_description_in_df_results(df_result: pd.DataFrame, model_name: str, target_class: str,
-                                         weights: List[int], num_epochs: int, loss_function_name: str, task: str,
-                                         fold_id: int, cross_validation,
-                                         textual_features_list: List[str], numerical_features: List[str], lr: float,
-                                         batch_size: int, token: str, dataset: DatasetDict) -> pd.DataFrame:
+def save_model_description_in_df_results(
+    df_result: pd.DataFrame,
+    model_name: str,
+    target_class: str,
+    weights: list[int],
+    num_epochs: int,
+    loss_function_name: str,
+    task: str,
+    fold_id: int,
+    cross_validation,
+    textual_features_list: list[str],
+    numerical_features: list[str],
+    lr: float,
+    batch_size: int,
+    token: str,
+    dataset: DatasetDict,
+) -> pd.DataFrame:
     """save general model description
     :param dataset:
     :param token:
@@ -501,8 +538,9 @@ def save_results_to_csv(df_result_csv_path: str, df_result: pd.DataFrame) -> Non
     logging.info(df_result)
 
 
-def add_mean_std_sem_for_the_previous_scores_resulting_from_cross_validation(cross_validation: int,
-                                                                             df_result_csv_path: str) -> None:
+def add_mean_std_sem_for_the_previous_scores_resulting_from_cross_validation(
+    cross_validation: int, df_result_csv_path: str
+) -> None:
     """
     calculate the mean, standard deviation, standard error of the mean
     :param cross_validation:
@@ -544,7 +582,12 @@ def create_log_file(model_name: str) -> None:
     """
     now = datetime.now()
     dt_string = now.strftime("%Y_%m_%d_%H_%M_%S")
-    logging.basicConfig(level=logging.INFO, format="%(message)s",
-                        handlers=[logging.FileHandler(f"results/run_{model_name}/{model_name}-{dt_string}.log"),
-                                  logging.StreamHandler()])
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(message)s",
+        handlers=[
+            logging.FileHandler(f"results/run_{model_name}/{model_name}-{dt_string}.log"),
+            logging.StreamHandler(),
+        ],
+    )
     os.chmod(f"results/run_{model_name}/{model_name}-{dt_string}.log", stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)

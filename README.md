@@ -10,7 +10,7 @@ Target_class= "STRONG"
 Used dataset= FinArgQuality corpus (will be published soon).
 
 ## Abstract
-Argumentation is the key to convincing people. 
+Argumentation is the key to convincing people.
 This thesis leverages the power of NLP in Argument Mining to predict the quality of company executives' arguments during earnings conference calls.
 We design a Bert-based model to predict the Strength argument quality dimension using the FinArgQuality corpus.
 We explore the effect of incorporating the categorical features (premise/claim type and relation type) as input to the Bert model.

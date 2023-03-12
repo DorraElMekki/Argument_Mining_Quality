@@ -8,7 +8,9 @@ class ClassificationHead(nn.Module):
         super().__init__()
         total_dims = config.hidden_size + num_extra_dims
         self.dense = nn.Linear(total_dims, total_dims)
-        classifier_dropout = config.classifier_dropout if config.classifier_dropout is not None else config.hidden_dropout_prob
+        classifier_dropout = (
+            config.classifier_dropout if config.classifier_dropout is not None else config.hidden_dropout_prob
+        )
         self.dropout = nn.Dropout(classifier_dropout)
         self.tanh = nn.Tanh()
         self.out_proj = nn.Linear(total_dims, config.num_labels)
