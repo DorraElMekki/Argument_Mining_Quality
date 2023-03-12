@@ -1,0 +1,7 @@
+torch~=1.13.1+cu117
+numpy~=1.21.4
+pandas~=1.5.3
+datasets~=2.10.1
+scikit-multilearn~=0.2.0
+tqdm~=4.62.3
+transformers~=4.26.1

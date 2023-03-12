@@ -1,0 +1,4 @@
+/data_processing/resulting_files_quality/
+*.xml
+*.iml
+*.db

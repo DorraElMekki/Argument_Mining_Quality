@@ -1,0 +1,82 @@
+---
+repos:
+    -   repo: https://github.com/pre-commit/pre-commit-hooks
+        rev: v4.4.0
+        hooks:
+            -   id: trailing-whitespace
+            -   id: check-yaml
+                args: [ --unsafe ]
+            -   id: check-added-large-files
+            #            exclude: modules/js/selector-framework/src/templates/__tests__|.yarn/releases|.yarn/plugins
+            -   id: mixed-line-ending
+    -   repo: https://github.com/psf/black
+        rev: 22.12.0
+        hooks:
+            -   id: black
+                args: [ --line-length=120 ]
+    #            language_version: python3.10
+    -   repo: https://github.com/asottile/pyupgrade
+        rev: v3.3.1
+        hooks:
+            -   id: pyupgrade
+                args: [ --py310-plus ]
+    -   repo: https://github.com/myint/autoflake
+        rev: v2.0.1
+        hooks:
+            -   id: autoflake
+                args: [ -i, --remove-all-unused-imports ]
+    -   repo: https://github.com/PyCQA/isort
+        rev: 5.12.0
+        hooks:
+            -   id: isort
+                args: [ --profile=black, --line-length=120 ]  # , --py=310
+    -   repo: https://github.com/pre-commit/mirrors-prettier
+        rev: v2.7.1
+        hooks:
+            -   id: prettier
+                types_or: [ javascript, jsx, ts, tsx ]
+                exclude: (^(.*)\.min\.js)
+    # Broken for now: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt/issues/25
+    # - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    #   rev: 0.1.0
+    #   hooks:
+    #       - id: yamlfmt
+    -   repo: https://github.com/adrienverge/yamllint.git
+        rev: v1.29.0
+        hooks:
+            -   id: yamllint
+                args:
+                    - -d
+                    - "{extends: relaxed, rules: {new-lines: disable, line-length: {max: 120},}}"
+    -   repo: https://github.com/PyCQA/flake8
+        rev: 6.0.0
+        hooks:
+            -   id: flake8
+                additional_dependencies: [
+                    'pep8-naming==0.13.2',
+                ]
+                args: [ "--select=N801,N802,N803,N804,N805,N811,N812,N813,N814,N817,N818" ]
+    -   repo: https://github.com/yoheimuta/protolint
+        rev: v0.42.2
+        hooks:
+            -   id: protolint
+                args: [ -fix, -config_path=ProtoDefinitions/.protolint-relaxed.yaml ]
+                name: Lint Protocol Buffer Files (legacy relaxed config)
+            -   id: protolint
+                name: Run ProtoLint on Protos/ Folder
+                args: [ -fix, -config_path=ProtoDefinitions/.protolint.yaml ]
+                files: ProtoDefinitions/Protos/(Selector/.*\.proto|Selector\.proto|watchlist\.proto|tableData\.proto|Outlook/.*\.proto)
+            -   id: protolint
+                name: Run ProtoLint on Services/ Folder
+                args: [ -fix, -config_path=ProtoDefinitions/.protolint.yaml ]
+                files: ProtoDefinitions/Services/(exec_engine_service\.proto|ui_interface\.proto)
+    -   repo: https://github.com/pre-commit/mirrors-mypy
+        rev: v1.0.1
+        hooks:
+            -   id: mypy
+                entry: bash -c 'exec env MYPYPATH="./pylib"'
+                name: mypy (no-env)
+                language: python
+                additional_dependencies: [ pytest==7.2.0, types-setuptools==65.5.0.2, types-PyYAML, types-dateparser==1.1.4.1, types-requests==2.28.0, dataclasses-json, tornado, pylib, types-protobuf==3.20.4.1, types-python-dateutil, mypy-protobuf, fastapi, tenacity ]
+                language_version: python3.10
+exclude: generated
