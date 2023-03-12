@@ -381,7 +381,7 @@ def train_model(
     loss_epochs = []
     logits_epochs = []
     predictions_epochs = []
-    for epoch in range(num_epochs):
+    for _ in range(num_epochs):
         logits_tensor_train = torch.tensor(()).to(device)
         prediction_tensor_train = torch.tensor(()).to(device)
         True_labels_tensor_train = torch.tensor(()).to(device)
@@ -409,7 +409,7 @@ def train_model(
                 outputs = model(**batch)
             logits = outputs.logits
             predictions = torch.argmax(logits, dim=-1)
-            for metric_name, metric in metrics_dict.items():
+            for metric in metrics_dict.values():
                 metric.add_batch(predictions=predictions, references=batch["labels"])
             loss_train_total += loss.item()
         loss_epochs.append(loss_train_total)
